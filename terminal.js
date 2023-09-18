@@ -48,18 +48,42 @@ $('body').terminal({
             terminal.echo('Please set your dice first.\n')
         }
     },
+    // 'https://www.williamcore.co.uk/stats'
     stats : function(){
-        axios.post('https://terminal.williamcore.co.uk/stats', data).then((response) =>{
-            terminal.echo(response);
-        }) 
+        if (data.number_of_dice > 0 && data.number_of_sides > 0 && data.number_of_successes > 0 && data.lowest_success > 0){
+            axios.post('https://terminal.williamcore.co.uk/stats', data).then((response) =>{
+                terminal.echo("The mean of all dice results is " + String(response.data.final_mean));
+                terminal.echo("The percentage chance of any one dice being a success is " + String(response.data.prob_one_event * 100) + "%");
+                terminal.echo("The percentage chance of all dice being successes is " + String(response.data.prob_all_event * 100) + "%");
+                terminal.echo("The percentage chance of the number of desired successes or more is " + String(response.data.binomial * 100) + "% \n");
+            }) 
+        }
+        else {
+            if (!(data.number_of_dice > 0) || !(data.number_of_sides > 0)){
+                terminal.echo("Please set the the dice first.");
+            }
+            if (!(data.lowest_success > 0) || !(data.number_of_successes > 0)) {
+                terminal.echo("Please set the the desire first.");
+            }
+            terminal.echo("\n");
+            
+        }
     }
 }, {
     onInit: function() {
-        this.echo('Hello, and welcome to my BinomialDice tool.\nThere are currently x commands.\n'+'[[b;#34c23e;]dice]' 
-        +' :Sets the number of dice and the number of sides of those dice.\n');
+        this.echo('Hello, and welcome to my BinomialDice tool.\nThere are currently 4 commands.\n' + 
+        '[[b;#34c23e;]dice]: Sets the number of dice and the number of sides of those dice.\n' + 
+        '[[b;#34c23e;]desire]: Sets desired result of all the dice.\n' +
+        '[[b;#34c23e;]rerolls]: Sets which dice that will be rerolled once. (optional)\n' +
+        '[[b;#34c23e;]stats]: Calculates the final probabilites.\n');
         terminal = this;
         },
-    greeting: false,
+    greetings: '[[bg;#34c23e;]__________.__                      .__       .__    ___________                  .__              .__   \n' +
+    '\\______   \\__| ____   ____   _____ |__|____  |  |   \\__    ___/__________  _____ |__| ____ _____  |  |  \n' +
+    ' |    |  _/  |/    \\ /  _ \\ /     \\|  \\__  \\ |  |     |    |_/ __ \\_  __ \\/     \\|  |/    \\\__   \\ |  |  \n' +
+    ' |    |   \\  |   |  (  <_> )  Y Y  \\  |/ __ \\|  |__   |    |\\  ___/|  | \\/  Y Y  \\  |   |  \\/ __ \\|  |__\n' +
+    ' |______  /__|___|  /\\____/|__|_|  /__(____  /____/   |____| \\___  >__|  |__|_|  /__|___|  (____  /____/\n' +
+    '        \\/        \\/             \\/        \\/                    \\/            \\/        \\/     \\/      ]\n',
     prompt: '[[b;#34c23e;]diceStats> ]' 
 });
 
