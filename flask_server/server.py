@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import simplejson
-from decimal import Decimal
+from threading import Thread
+from decimal import * 
 
 app = Flask(__name__)
 
@@ -61,19 +62,32 @@ def binomial_expansion(n, r):
 def binomial_event(n,x,p,q):
     return binomial_expansion(n,x) * (p ** x) * (q ** (n-x))
 
-def prob_specific_event(data, one_event_prob):
+def prob_specific_event(data, one_event_prob, add_context, sub_context):
     dice = data['number_of_dice']
     successes = data['number_of_successes']
     n = Decimal(dice)
     x = Decimal(successes)
     p = one_event_prob
-    total_prob = 0
-    for i in range(successes, dice+1):
-        total_prob += binomial_event(n,i,p,1-p)
+    # midpoint = (successes + dice + 1) // 2
+    if successes > (dice/2):
+        total_prob = Decimal(0)
+        for i in range(successes, dice+1):
+            total_prob += binomial_event(n,i,p,1-p)
+    else:
+        setcontext(sub_context)
+        total_prob = Decimal(1)
+        for i in range(0, successes):
+            total_prob -= binomial_event(n,i,p,1-p)
+        setcontext(add_context)
     return total_prob
+
 
 @app.route('/stats', methods=['POST'])
 def stats():
+    add_context = Context(prec=20, rounding=ROUND_HALF_DOWN, traps=[FloatOperation])
+    sub_context = Context(prec=40, rounding=ROUND_CEILING, traps=[FloatOperation])
+    setcontext(add_context)
+
     try:
         data = request.get_json()
 
