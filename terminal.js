@@ -11,18 +11,49 @@ $('body').terminal({
     echo: function(arg1) {
         this.echo(arg1);
     },
-    dice: function(){
-        terminal.read('Please Enter the Number of Dice and the Number of Sides in the format 2d6: ').then(function(string) {
-            check_dice(string);
-        });
+    dice: function(arg1){
+        if (arg1){
+            check_dice(arg1);
+        }
+        else {
+            terminal.read('Please Enter the Number of Dice and the Number of Sides in the format 2d6: ').then(function(string) {
+                check_dice(string);
+            });
+        }
     },
-    rerolls: function(){
-        terminal.read('Please Enter which Dice results you wish to Re-roll once in the format 1-3 as a range, if no Re-rolls are required please enter 0: ').then(function(string){
-            check_rerolls(string);
-        });
+    rerolls: function(arg1){
+        if (arg1) {
+            check_rerolls(arg1);
+        }
+        else {
+            terminal.read('Please Enter which Dice results you wish to Re-roll once in the format 1-3 as a range, if no Re-rolls are required please enter 0: ').then(function(string){
+                check_rerolls(string);
+            });
+        }
     },
-    desire: function(){
-        if (data.number_of_dice >= 0 && data.number_of_sides >= 0) {
+    desire: function(arg1, arg2) {
+        if (data.number_of_dice > 0 && data.number_of_sides > 0) {
+        if (arg1 && arg2) {
+            var arg1 = String(arg1)
+            var arg2 = String(arg2)
+            const cleaned_string = arg1.replace(/[^\d]/g, '');
+            if (cleaned_string > 0 && cleaned_string <= data.number_of_sides) {
+                data.lowest_success = parseInt(cleaned_string);
+                terminal.echo('Successfully updated success boundry.');
+            }
+            else {
+                terminal.echo('Boundry not updated.\nPlease retry with a number greater than 0 and equal to or less than ' + data.number_of_sides + '.');
+            }
+            const cleaned_string_2 = arg2.replace(/[^\d]/g, '');
+            if (cleaned_string_2 > 0 && cleaned_string_2 <= data.number_of_dice) {
+                data.number_of_successes = parseInt(cleaned_string_2);
+                terminal.echo('Successfully updated number of successes.\n');
+            }
+            else {
+                terminal.echo('Number of successes not updated.\nPlease retry with a number greater than 0 and equal to or less than ' + data.number_of_dice + '.\n');
+            }
+            
+        } else {
             terminal.read('Please enter what is the lowest number on the dice that counts as a success: ').then(function(string) {
                 const cleaned_string = string.replace(/[^\d]/g, '');
 
@@ -34,20 +65,22 @@ $('body').terminal({
 
                         if (cleaned_string > 0 && cleaned_string <= data.number_of_dice) {
                             data.number_of_successes = parseInt(cleaned_string);
-                            terminal.echo('Successfully updated. \n');
+                            terminal.echo('Successfully updated number of successes.\n');
                         } else {
-                            terminal.echo('Please retry with a number greater than 0 and equal to or less than ' + data.number_of_dice + ' .\n');
+                            terminal.echo('Number of successes not updated.\nPlease retry with a number greater than 0 and equal to or less than ' + data.number_of_dice + '.\n');
                         }
                     });
                 } else {
-                    terminal.echo('Please retry with a number greater than 0 and equal to or less than ' + data.number_of_sides + ' .\n');
+                    terminal.echo('Boundry not updated.\nPlease retry with a number greater than 0 and equal to or less than ' + data.number_of_sides + '.\n');
                 }
             });
+            }
         }
-        else {
-            terminal.echo('Please set your dice first.\n')
-        }
-    },
+            else {
+                terminal.echo('Please set your dice first.\n')
+            }
+        },
+
     // 'https://www.williamcore.co.uk/stats'
     stats : function(){
         if (data.number_of_dice > 0 && data.number_of_sides > 0 && data.number_of_successes > 0 && data.lowest_success > 0){
@@ -84,7 +117,8 @@ $('body').terminal({
     ' |    |   \\  |   |  (  <_> )  Y Y  \\  |/ __ \\|  |__   |    |\\  ___/|  | \\/  Y Y  \\  |   |  \\/ __ \\|  |__\n' +
     ' |______  /__|___|  /\\____/|__|_|  /__(____  /____/   |____| \\___  >__|  |__|_|  /__|___|  (____  /____/\n' +
     '        \\/        \\/             \\/        \\/                    \\/            \\/        \\/     \\/      ]\n',
-    prompt: '[[b;#34c23e;]diceStats> ]' 
+    prompt: '[[b;#34c23e;]diceStats> ]' ,
+    checkArity: false
 });
 
 function check_dice(input) {
@@ -102,8 +136,16 @@ function check_dice(input) {
     if (data.number_of_dice == "" || data.number_of_dice == null || data.number_of_dice == NaN) {
         data.number_of_dice = 1;
     }
+    else if (data.number_of_dice > 500) {
+        terminal.echo("Please use 500 or less dice, my server can't handle that calculation.\n")
+        return false;
+    }
     if (data.number_of_sides == "" || data.number_of_sides == null || data.number_of_sides == NaN) {
         data.number_of_sides = 1;
+    }
+    else if (data.number_of_sides > 500) {
+        terminal.echo("Please use 500 or less sides, my server can't handle that calculation.\n")
+        return false;
     }
 
     terminal.echo("The number of dice have been updated to " + data.number_of_dice);
@@ -115,8 +157,18 @@ function check_rerolls(input) {
 
     if (rerolls == 0) {
         terminal.echo("We will reroll no dice.\n");
+        data.lower_bound = 0;
+        data.upper_bound = 0;
         return true;
     }
+    
+    if (rerolls == 1) {
+        terminal.echo("We will reroll all 1's once. \n");
+        data.lower_bound = 0;
+        data.upper_bound = 1;
+        return true;
+    }
+
     const reroll_array = rerolls.split("-", 2);
 
     if (reroll_array.length != 2) {
