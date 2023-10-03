@@ -51,10 +51,10 @@ def prob_all_event(data, prob_one_event):
     return final_probability
 
 def factorial(n):
-    fact = Decimal(1)
+    fact = 1
     for num in range(2, int(n) + 1):
-        fact *= Decimal(num)
-    return fact
+        fact *= num
+    return Decimal(fact)
 
 def binomial_expansion(n, r):
     return factorial(n) / (factorial(r) * factorial(n-r))
@@ -86,7 +86,6 @@ def prob_specific_event(data, one_event_prob):
 
     t_1.join(timeout=100)
     t_2.join(timeout=100)
-    print(result)
     return (sum(result))
 
 @app.route('/stats', methods=['POST'])
