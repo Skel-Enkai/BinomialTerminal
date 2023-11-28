@@ -150,35 +150,33 @@ function check_rerolls(input) {
         data.lower_bound = 0;
         data.upper_bound = 0;
         terminal.echo("We will reroll no dice.\n");
-        return true;
     }
     else if (input == 1) {
         data.lower_bound = 1;
         data.upper_bound = 1;
         terminal.echo("We will rerolls any 1's once.\n");
-        return true;
     }
+    else {
+        const rerolls = input.toLowerCase();
+        const reroll_array = rerolls.split("-", 2);
 
-    const rerolls = input.toLowerCase();
-    const reroll_array = rerolls.split("-", 2);
+        if (reroll_array.length != 2) {
+            terminal.echo('Please retry with the given format. Rerolls have not been updated.\n');
+        }
+        else {
+            const lower = parseInt(reroll_array[0].replace(/[^\d]/g, ''));
+            const upper = parseInt(reroll_array[1].replace(/[^\d]/g, ''));
 
-    if (reroll_array.length != 2) {
-        terminal.echo('Please retry with the given format. Rerolls have not been updated.\n');
-        return false;
+            if (lower > data.number_of_sides || upper > data.number_of_sides) {
+                terminal.echo('Please enter a reroll list within the boundry of number of sides you have assigned to your dice.\n');
+            }
+            else {
+                data.lower_bound = lower;
+                data.upper_bound = upper;
+                terminal.echo("We will reroll all dice between " + data.lower_bound + " and " + data.upper_bound + " (inclusive) once.\n");
+            }
+        }
     }
-
-    const lower = parseInt(reroll_array[0].replace(/[^\d]/g, ''));
-    const upper = parseInt(reroll_array[1].replace(/[^\d]/g, ''));
-
-    if (lower > data.number_of_sides || upper > data.number_of_sides) {
-        terminal.echo('Please enter a reroll list within the boundry of number of sides you have assigned to your dice.\n');
-        return false;
-    }
-
-    data.lower_bound = lower;
-    data.upper_bound = upper;
-
-    terminal.echo("We will reroll all dice between " + data.lower_bound + " and " + data.upper_bound + " (inclusive) once.\n");
 }
 
 function check_desire(arg1, arg2) {
