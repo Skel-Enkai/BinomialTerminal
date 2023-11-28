@@ -102,7 +102,7 @@ def stats():
         final_mean = mean(data, comb_faces) 
         one_event_prob = prob_one_event(data, comb_faces)
         all_event_prob = prob_all_event(data, one_event_prob)
-        # removing some base cases
+        # removing some obvious cases
         if one_event_prob == 1:
             binomial = 1
         elif one_event_prob == 0:
