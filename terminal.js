@@ -12,6 +12,14 @@ $('body').terminal({
         this.echo(arg1);
     },
     dice: function(arg1){
+        data = {
+            number_of_dice: 0,
+            number_of_sides: 0,
+            lower_bound: 0,
+            upper_bound: 0,
+            lowest_success: 0,
+            number_of_successes: 0,
+        };
         if (arg1) {
             check_dice(arg1);
         }
@@ -69,10 +77,16 @@ $('body').terminal({
             terminal.echo('Please set your dice first.\n');
         }
     },
-    // 'https://www.williamcore.co.uk/stats'
-    stats : function(){
+    stats : function(arg1){
+        if (arg1 == '--legacy' || arg1 == '-l') {
+            var post_location = 'https://terminal.williamcore.co.uk/stats'
+        }
+        else {
+            var post_location = 'https://terminal.williamcore.co.uk/hashstats'
+        }
+
         if (data.number_of_dice > 0 && data.number_of_sides > 0 && data.number_of_successes > 0 && data.lowest_success > 0){
-            axios.post('https://terminal.williamcore.co.uk/stats', data).then((response) =>{
+            axios.post(post_location, data).then((response) =>{
                 terminal.echo("The mean of all dice results is " + String(response.data.final_mean));
                 terminal.echo("The percentage chance of any one dice being a success is " + String(response.data.prob_one_event * 100) + "%");
                 terminal.echo("The percentage chance of all dice being successes is " + String(response.data.prob_all_event * 100) + "%");
