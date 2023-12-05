@@ -59,7 +59,7 @@ def binomial_event(n,x,p,q):
     x = Decimal(x)
     return binomial_expansion(n,x) * Decimal(p ** x) * Decimal(q ** Decimal(n-x))
 
-def binomial_thread(lower, upper, n, x, p, result):
+def binomial_thread(lower, upper, n, p, result):
     total_prob = Decimal(0)
     for i in range(lower, upper):
         total_prob += binomial_event(n,i,p,1-p)
@@ -74,11 +74,39 @@ def prob_specific_event(data, one_event_prob):
 
     midpoint = (successes + dice) // 2
     result = []
-    t_1 = Thread(target=binomial_thread, args=[successes, midpoint, n, x, p, result])
-    t_2 = Thread(target=binomial_thread, args=[midpoint, dice+1, n, x, p, result])
+    t_1 = Thread(target=binomial_thread, args=[successes, midpoint, n, p, result])
+    t_2 = Thread(target=binomial_thread, args=[midpoint, dice+1, n, p, result])
     t_1.start()
     t_2.start()
 
     t_1.join(timeout=100)
     t_2.join(timeout=100)
-    return (sum(result))
+    return sum(result)
+
+# this does not work as sum(result) approaches 1, precision is discarded
+def prob_specific_event_with_effiency(data, one_event_prob):
+    dice = data['number_of_dice']
+    successes = data['number_of_successes']
+    n = dice
+    x = successes
+    p = one_event_prob
+
+    result = []
+    if successes > dice // 2:
+        midpoint = (successes + dice) // 2
+        t_1 = Thread(target=binomial_thread, args=[successes, midpoint, n, p, result])
+        t_2 = Thread(target=binomial_thread, args=[midpoint, dice+1, n, p, result])
+    else:
+        midpoint = successes // 2
+        t_1 = Thread(target=binomial_thread, args=[1, midpoint, n, p, result])
+        t_2 = Thread(target=binomial_thread, args=[midpoint, successes, n, p, result])
+
+    t_1.start()
+    t_2.start()
+    t_1.join(timeout=100)
+    t_2.join(timeout=100)
+
+    if successes > dice // 2:
+        return sum(result)
+    else: 
+        return (1 - sum(result))
